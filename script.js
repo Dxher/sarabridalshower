@@ -91,7 +91,7 @@ const gifts = [
         id: 13,
         name: "Thought of something different? Please select if your gift is not listed",
         link: "",
-        image: "assets/13.png",
+        image: "assets/13.jpg",
         available: true,
         isCustom: true
     }
@@ -373,3 +373,4 @@ function closeAdminPanel() {
         adminModal.remove();
     }
 }
+
