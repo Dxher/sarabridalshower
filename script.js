@@ -83,7 +83,7 @@ const gifts = [
     {
         id: 12,
         name: "The Key Three Jumbo Canister Set",
-        link: "#",
+        link: "https://www.thebreakfastpantry.com/products/the-breakfast-pantry-key-three-jumbo-canister-set-with-acacia-wood-lids?utm_medium=paid&utm_id=120223270172860766&utm_content=120228346663620766&utm_term=120226353523040766&utm_campaign=120223270172860766&utm_source=facebook",
         image: "assets/12.png",
         available: true
     },
@@ -373,4 +373,5 @@ function closeAdminPanel() {
         adminModal.remove();
     }
 }
+
 
