@@ -268,20 +268,20 @@ async function confirmGift() {
 async function sendEmailNotifications(registryEntry) {
     try {
         // Send notification to Anna (bride)
-        // await emailjs.send("service_kcjagl8", "template_q7wztlk", {
-        //     user_name: registryEntry.claimedBy,
-        //     user_email: registryEntry.claimedByEmail,
-        //     gift_name: registryEntry.giftName,
-        //     gift_link: registryEntry.giftLink
-        // });
+        await emailjs.send("service_kcjagl8", "template_q7wztlk", {
+            user_name: registryEntry.claimedBy,
+            user_email: registryEntry.claimedByEmail,
+            gift_name: registryEntry.giftName,
+            gift_link: registryEntry.giftLink
+        });
         
-        // // Send confirmation to guest
-        // await emailjs.send("service_kcjagl8", "template_pozvmrk", {
-        //     user_name: registryEntry.claimedBy,
-        //     user_email: registryEntry.claimedByEmail,
-        //     gift_name: registryEntry.giftName,
-        //     gift_link: registryEntry.giftLink
-        // });
+        // Send confirmation to guest
+        await emailjs.send("service_kcjagl8", "template_pozvmrk", {
+            user_name: registryEntry.claimedBy,
+            user_email: registryEntry.claimedByEmail,
+            gift_name: registryEntry.giftName,
+            gift_link: registryEntry.giftLink
+        });
         
         console.log("Emails sent successfully!");
     } catch (error) {
@@ -360,3 +360,4 @@ function closeAdminPanel() {
         adminModal.remove();
     }
 }
+
