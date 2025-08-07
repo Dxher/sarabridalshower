@@ -20,6 +20,10 @@ body {
     min-height: 100vh;
     color: #333;
 }
+/* Make the welcome screen background match the gift list (no dark overlay) */
+#welcomeModal {
+  background: transparent;
+}
 
 /* Modal Styling */
 .modal {
