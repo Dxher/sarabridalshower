@@ -86,14 +86,6 @@ const gifts = [
         link: "https://www.thebreakfastpantry.com/products/the-breakfast-pantry-key-three-jumbo-canister-set-with-acacia-wood-lids?utm_medium=paid&utm_id=120223270172860766&utm_content=120228346663620766&utm_term=120226353523040766&utm_campaign=120223270172860766&utm_source=facebook",
         image: "assets/12.png",
         available: true
-    },
-    {
-        id: 13,
-        name: "Thought of something different? Please select if your gift is not listed",
-        link: "",
-        image: "assets/13.jpg",
-        available: true,
-        isCustom: true
     }
 ];
 
@@ -113,7 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
         currentUser = { name, email };
         document.getElementById('welcomeModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-        document.getElementById('welcomeMessage').textContent = `Please select the gift option you would like to bring to the bridal shower on September 27th, 2025 @ 1pm`;
+        document.getElementById('welcomeMessage').textContent = `Please select the gift option you would like to bring to the bridal shower on September 27th, 2025 @ 1pm. `;
+        document.getElementById('welcomeMessage2').textContent = `However, if you wish to help us celebrate with a different gift, a monetary contribution towards our home will be warmly received. `;
         
         displayGifts();
     });
@@ -373,5 +366,3 @@ function closeAdminPanel() {
         adminModal.remove();
     }
 }
-
-
