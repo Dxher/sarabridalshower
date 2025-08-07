@@ -120,6 +120,10 @@ header h1 {
     color: var(--driftwood);
     font-size: 18px;
 }
+#welcomeMessage2 {
+    color: var(--driftwood);
+    font-size: 18px;
+}
 
 /* Gift List Styling */
 .gift-container {
