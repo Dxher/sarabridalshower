@@ -84,11 +84,12 @@ const gifts = [
         id: 12,
         name: "The Key Three Jumbo Canister Set",
         link: "#",
-        image: "assets/12.png"
+        image: "assets/12.png",
+        available: true
     },
     {
         id: 13,
-        name: "Thought of something different? Check here if you want to bring your own item",
+        name: "Thought of something different? Please select if your gift is not listed",
         link: "",
         image: "assets/13.png",
         available: true,
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentUser = { name, email };
         document.getElementById('welcomeModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-        document.getElementById('welcomeMessage').textContent = `Welcome, ${name}!`;
+        document.getElementById('welcomeMessage').textContent = `Please select the gift option you would like to bring to the bridal shower on September 27th, 2025 @ 1pm`;
         
         displayGifts();
     });
