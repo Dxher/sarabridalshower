@@ -2,99 +2,51 @@
 emailjs.init("A_1HTz8Jl59--CiyL"); // You need to get this from EmailJS dashboard
 
 // Gift data with images
-const gifts = [
-    {
-        id: 1,
-        name: "Cuisinart 50th Anniversary Food Processor",
-        link: "https://www.cuisinart.ca/en/50th-anniversary-edition---custom-14-14-cup-food-processor/DFP-14SENYC.html",
-        image: "assets/1.png",
-        available: true
-    },
-    {
-        id: 2,
-        name: "Le Creuset Round Dutch Oven - Flamme Doree",
-        link: "https://www.lecreuset.ca/en_CA/round-dutch-oven/CA-21177.html",
-        image: "assets/2.png",
-        available: true
-    },
-    {
-        id: 3,
-        name: "Caraway Cookware Set - Cream & Gold",
-        link: "https://www.crateandbarrel.ca/caraway-home-cream-12-piece-ceramic-non-stick-cookware-set-with-gold-hardware/s401207",
-        image: "assets/3.png",
-        available: true
-    },
-    {
-        id: 4,
-        name: "Bath Towel - Ivory",
-        link: "https://www.crateandbarrel.ca/organic-turkish-cotton-ivory-bath-towel/s586851",
-        image: "assets/4.png",
-        available: true
-    },
-    {
-        id: 5,
-        name: "Cuisinart 15-piece Cutlery Set",
-        link: "https://www.crateandbarrel.ca/cuisinart-15-piece-stainless-steel-hollow-handle-cutlery-block-set-with-acacia-block/s638758",
-        image: "assets/5.png",
-        available: true
-    },
-    {
-        id: 6,
-        name: "AISIPRIN 24 Pcs Glass Spice Jars - Square",
-        link: "https://a.co/d/87JuGhF",
-        image: "assets/6.png",
-        available: true
-    },
-    {
-        id: 7,
-        name: "Diptyque Feu de Bois Candle",
-        link: "https://www.diptyqueparis.com/en_us/p/home-fragrances/scented-candles/colored-scented-candles/feu-de-bois-wood-fire-candle-300g.html",
-        image: "assets/7.png",
-        available: true
-    },
-    {
-        id: 8,
-        name: "Aesop - Resurrection Hand Purifying Duet",
-        link: "https://www.aesop.ca/en/hand-and-body/hand-and-body-care-kits/resurrection-hand-purifying-duet/AEOAPB256.html",
-        image: "assets/8.png",
-        available: true
-    },
-    {
-        id: 9,
-        name: "OUAI Hand Wash",
-        link: "https://a.co/d/4Lp0JmP",
-        image: "assets/9.png",
-        available: true
-    },
-    {
-        id: 10,
-        name: "Breville Juicer - Silver",
-        link: "https://a.co/d/hqqDzVh",
-        image: "assets/10.png",
-        available: true
-    },
-    {
-        id: 11,
-        name: "WORHE Marble Coaster - Beige",
-        link: "https://a.co/d/45VK50r",
-        image: "assets/11.png",
-        available: true
-    },
-    {
-        id: 12,
-        name: "The Key Three Jumbo Canister Set",
-        link: "https://www.thebreakfastpantry.com/products/the-breakfast-pantry-key-three-jumbo-canister-set-with-acacia-wood-lids?utm_medium=paid&utm_id=120223270172860766&utm_content=120228346663620766&utm_term=120226353523040766&utm_campaign=120223270172860766&utm_source=facebook",
-        image: "assets/12.png",
-        available: true
-    }
-];
+let gifts = [];
+
+// Firestore DB (compat API)
+const db = firebase.firestore();
+const giftsCollection = db.collection('gifts'); // your collection that has docs "1", "2", ... "12"
+
 
 let currentUser = null;
 let selectedGift = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    loadRegistryData();
+    //loadRegistryData();
+    // Real-time sync: when Firestore gifts change, update availability live
+    try {
+        // Build the gifts array DIRECTLY from Firestore on every change
+        giftsCollection.onSnapshot((snapshot) => {
+            gifts = snapshot.docs
+                .map((doc) => {
+                    const data = doc.data() || {};
+                    const id = (data.id !== undefined) ? data.id : Number(doc.id);
+                    const claimed = data.claimed === true;
+                    // available unless explicitly unavailable or claimed
+                    const available = !(claimed || data.available === false);
+
+                    return {
+                        id,
+                        name: data.name || "",
+                        link: data.link || "#",
+                        image: data.image || "",
+                        available,
+                        isCustom: !!data.isCustom
+                    };
+                })
+                .sort((a, b) => (a.id || 0) - (b.id || 0));
+
+            // Only re-render after the user enters
+            if (document.getElementById('mainContent').style.display === 'block') {
+                displayGifts();
+            }
+        });
+    } catch (e) {
+        console.warn('Realtime listener error:', e);
+    }
+
     
     // Handle guest form submission
     document.getElementById('guestForm').addEventListener('submit', function(e) {
@@ -112,9 +64,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Load registry data from localStorage
+// Load registry data from Firestore, fallback to localStorage
 async function loadRegistryData() {
     try {
+        // 1) Start with all gifts available
+        gifts.forEach(g => { if (!g.isCustom) g.available = true; });
+
+        // 2) Pull claimed/available from Firestore 'gifts' collection
+        const snap = await giftsCollection.get();
+        snap.forEach(doc => {
+            const data = doc.data() || {};
+            const idFromDoc = data.id ?? Number(doc.id);
+            const gift = gifts.find(g => g.id === idFromDoc);
+            if (gift) {
+                // If doc has claimed=true → hide it. If not present, fall back to "available" field or default true.
+                const claimed = data.claimed === true;
+                const available = data.hasOwnProperty('claimed') ? !claimed : (data.available !== false);
+                gift.available = available;
+
+                // Optional: keep meta (name/link/image) in sync with Firestore if you want
+                if (data.name)  gift.name  = data.name;
+                if (data.link)  gift.link  = data.link;
+                if (data.image) gift.image = data.image;
+            }
+        });
+
+        // 3) Fallback: also apply any localStorage claims (keeps backward-compat)
         const savedData = localStorage.getItem('registryData');
         if (savedData) {
             const data = JSON.parse(savedData);
@@ -127,6 +102,7 @@ async function loadRegistryData() {
         console.error('Error loading registry data:', error);
     }
 }
+
 
 // Display gifts
 function displayGifts() {
@@ -223,6 +199,7 @@ function cancelWarning() {
 }
 
 // Confirm gift selection
+// Confirm gift selection
 async function confirmGift() {
     if (!selectedGift || !currentUser) return;
     
@@ -236,7 +213,7 @@ async function confirmGift() {
     // Hide warning modal
     document.getElementById('warningModal').style.display = 'none';
     
-    // Save to registry
+    // Save to registry object
     const registryEntry = {
         giftId: selectedGift.id,
         giftName: giftName,
@@ -245,23 +222,39 @@ async function confirmGift() {
         claimedByEmail: currentUser.email,
         claimedAt: new Date().toISOString()
     };
-    
-    // Save to localStorage
+
+    // 1) Write to Firestore (source of truth)
+    try {
+        await giftsCollection.doc(String(selectedGift.id)).set({
+            id: selectedGift.id,
+            name: selectedGift.name,
+            link: selectedGift.link,
+            image: selectedGift.image,
+            claimed: true,
+            claimedBy: currentUser.name,
+            claimedByEmail: currentUser.email,
+            claimedAt: registryEntry.claimedAt,
+            available: false
+        }, { merge: true });
+    } catch (err) {
+        console.error('Firestore write failed:', err);
+        alert('There was an issue saving your selection. Please try again.');
+        return;
+    }
+
+    // 2) Also keep your localStorage behavior (unchanged)
     let registryData = JSON.parse(localStorage.getItem('registryData') || '{"claimed":[]}');
     registryData.claimed.push(registryEntry);
     localStorage.setItem('registryData', JSON.stringify(registryData));
     
-    // Send email notifications
+    // 3) Send email notifications (your original function call)
     await sendEmailNotifications(registryEntry);
     
-    // Update UI
+    // 4) Update UI exactly as before
     if (!selectedGift.isCustom) {
         selectedGift.available = false;
     }
-    
-    // Clear custom input
     document.getElementById('customGiftInput').value = '';
-    
     document.getElementById('confirmSection').style.display = 'none';
     document.getElementById('customGiftSection').style.display = 'none';
     displayGifts();
@@ -270,24 +263,25 @@ async function confirmGift() {
     selectedGift = null;
 }
 
+
 // Send email notifications
 async function sendEmailNotifications(registryEntry) {
     try {
         // Send notification to Anna (bride)
-        await emailjs.send("service_kcjagl8", "template_q7wztlk", {
-            user_name: registryEntry.claimedBy,
-            user_email: registryEntry.claimedByEmail,
-            gift_name: registryEntry.giftName,
-            gift_link: registryEntry.giftLink
-        });
+        // await emailjs.send("service_kcjagl8", "template_q7wztlk", {
+        //     user_name: registryEntry.claimedBy,
+        //     user_email: registryEntry.claimedByEmail,
+        //     gift_name: registryEntry.giftName,
+        //     gift_link: registryEntry.giftLink
+        // });
         
-        // Send confirmation to guest
-        await emailjs.send("service_kcjagl8", "template_pozvmrk", {
-            user_name: registryEntry.claimedBy,
-            user_email: registryEntry.claimedByEmail,
-            gift_name: registryEntry.giftName,
-            gift_link: registryEntry.giftLink
-        });
+        // // Send confirmation to guest
+        // await emailjs.send("service_kcjagl8", "template_pozvmrk", {
+        //     user_name: registryEntry.claimedBy,
+        //     user_email: registryEntry.claimedByEmail,
+        //     gift_name: registryEntry.giftName,
+        //     gift_link: registryEntry.giftLink
+        // });
         
         console.log("Emails sent successfully!");
     } catch (error) {
@@ -299,7 +293,7 @@ async function sendEmailNotifications(registryEntry) {
 // Admin functions
 function showAdminPrompt() {
     const password = prompt("Enter admin password:");
-    if (password === "anna2024") { // Change this password!
+    if (password === "anna2024") {
         showAdminPanel();
     } else if (password) {
         alert("Incorrect password");
