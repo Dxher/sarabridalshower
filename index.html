@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beach Bridal Shower Registry</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to Our Beach Bridal Shower Registry</h2>
+            <form id="guestForm">
+                <input type="text" id="fullName" placeholder="Your Full Name" required>
+                <input type="email" id="email" placeholder="Your Email" required>
+                <button type="submit">Enter Registry</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" style="display: none;">
+        <header>
+            <h1>Beach Bridal Shower Registry</h1>
+            <p id="welcomeMessage"></p>
+        </header>
+        
+        <div id="giftList" class="gift-container">
+            <!-- Gifts will be loaded here -->
+        </div>
+        
+        <!-- Custom Gift Input Section -->
+        <div id="customGiftSection" style="display: none;">
+            <input type="text" id="customGiftInput" placeholder="Please describe your gift idea..." />
+        </div>
+        
+        <!-- Confirm Button (hidden until selection) -->
+        <div id="confirmSection" style="display: none;">
+            <button id="confirmButton" onclick="showWarning()">Confirm Selection</button>
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div id="warningModal" class="modal" style="display: none;">
+        <div class="modal-content warning">
+            <h3>⚠️ Important Notice</h3>
+            <p>Once you have selected this item, it will be removed off the list as you have claimed this and it is now your responsibility.</p>
+            <p>If you wish to alter your gift selection down the line, please contact Anna (pretty please think long and hard before a selection so it's less trouble on me lol)</p>
+            <div class="button-group">
+                <button onclick="confirmGift()" class="confirm-btn">I Understand, Confirm</button>
+                <button onclick="cancelWarning()" class="cancel-btn">Go Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Access (hidden button) -->
+    <div id="adminAccess" style="position: fixed; bottom: 10px; right: 10px; opacity: 0.1;">
+        <button onclick="showAdminPrompt()" style="font-size: 10px;">Admin</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
